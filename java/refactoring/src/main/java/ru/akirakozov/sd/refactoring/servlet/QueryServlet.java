@@ -13,13 +13,18 @@ import java.sql.Statement;
  * @author akirakozov
  */
 public class QueryServlet extends HttpServlet {
+    private final String dbConnectionUrl;
+
+    public QueryServlet(String dbConnectionUrl) {
+        this.dbConnectionUrl = dbConnectionUrl;
+    }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String command = request.getParameter("command");
 
         if ("max".equals(command)) {
             try {
-                try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
+                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
                     Statement stmt = c.createStatement();
                     ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCT ORDER BY PRICE DESC LIMIT 1");
                     response.getWriter().println("<html><body>");
@@ -41,7 +46,7 @@ public class QueryServlet extends HttpServlet {
             }
         } else if ("min".equals(command)) {
             try {
-                try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
+                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
                     Statement stmt = c.createStatement();
                     ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCT ORDER BY PRICE LIMIT 1");
                     response.getWriter().println("<html><body>");
@@ -63,7 +68,7 @@ public class QueryServlet extends HttpServlet {
             }
         } else if ("sum".equals(command)) {
             try {
-                try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
+                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
                     Statement stmt = c.createStatement();
                     ResultSet rs = stmt.executeQuery("SELECT SUM(price) FROM PRODUCT");
                     response.getWriter().println("<html><body>");
@@ -83,7 +88,7 @@ public class QueryServlet extends HttpServlet {
             }
         } else if ("count".equals(command)) {
             try {
-                try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
+                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
                     Statement stmt = c.createStatement();
                     ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM PRODUCT");
                     response.getWriter().println("<html><body>");

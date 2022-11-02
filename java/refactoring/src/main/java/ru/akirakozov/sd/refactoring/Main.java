@@ -35,7 +35,7 @@ public class Main {
 
         context.addServlet(new ServletHolder(new AddProductServlet("jdbc:sqlite:test.db")), "/add-product");
         context.addServlet(new ServletHolder(new GetProductsServlet("jdbc:sqlite:test.db")),"/get-products");
-        context.addServlet(new ServletHolder(new QueryServlet()),"/query");
+        context.addServlet(new ServletHolder(new QueryServlet("jdbc:sqlite:test.db")),"/query");
 
         server.start();
         server.join();
