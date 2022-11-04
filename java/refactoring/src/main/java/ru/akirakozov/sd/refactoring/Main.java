@@ -10,13 +10,19 @@ import ru.akirakozov.sd.refactoring.servlet.QueryServlet;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * @author akirakozov
  */
 public class Main {
+    private static final Properties properties = new Properties();
+
     public static void main(String[] args) throws Exception {
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:test.db")) {
+        properties.load(Main.class.getResourceAsStream("/db.properties"));
+        String dbConnectionUrl = properties.getProperty("connection_url");
+
+        try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
             String sql = "CREATE TABLE IF NOT EXISTS PRODUCT" +
                     "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
                     " NAME           TEXT    NOT NULL, " +
@@ -33,9 +39,9 @@ public class Main {
         context.setContextPath("/");
         server.setHandler(context);
 
-        context.addServlet(new ServletHolder(new AddProductServlet("jdbc:sqlite:test.db")), "/add-product");
-        context.addServlet(new ServletHolder(new GetProductsServlet("jdbc:sqlite:test.db")),"/get-products");
-        context.addServlet(new ServletHolder(new QueryServlet("jdbc:sqlite:test.db")),"/query");
+        context.addServlet(new ServletHolder(new AddProductServlet(dbConnectionUrl)), "/add-product");
+        context.addServlet(new ServletHolder(new GetProductsServlet(dbConnectionUrl)),"/get-products");
+        context.addServlet(new ServletHolder(new QueryServlet(dbConnectionUrl)),"/query");
 
         server.start();
         server.join();
