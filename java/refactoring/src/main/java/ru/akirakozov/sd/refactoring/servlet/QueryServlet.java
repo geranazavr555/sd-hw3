@@ -1,5 +1,7 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
+import ru.akirakozov.sd.refactoring.db.Database;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,99 +15,63 @@ import java.sql.Statement;
  * @author akirakozov
  */
 public class QueryServlet extends HttpServlet {
-    private final String dbConnectionUrl;
+    private final Database db;
 
-    public QueryServlet(String dbConnectionUrl) {
-        this.dbConnectionUrl = dbConnectionUrl;
+    public QueryServlet(Database db) {
+        this.db = db;
     }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String command = request.getParameter("command");
 
         if ("max".equals(command)) {
-            try {
-                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
-                    Statement stmt = c.createStatement();
-                    ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCT ORDER BY PRICE DESC LIMIT 1");
-                    response.getWriter().println("<html><body>");
-                    response.getWriter().println("<h1>Product with max price: </h1>");
+            db.executeQuery("SELECT * FROM PRODUCT ORDER BY PRICE DESC LIMIT 1", resultSet -> {
+                response.getWriter().println("<html><body>");
+                response.getWriter().println("<h1>Product with max price: </h1>");
 
-                    while (rs.next()) {
-                        String  name = rs.getString("name");
-                        int price  = rs.getInt("price");
-                        response.getWriter().println(name + "\t" + price + "</br>");
-                    }
-                    response.getWriter().println("</body></html>");
-
-                    rs.close();
-                    stmt.close();
+                while (resultSet.next()) {
+                    String  name = resultSet.getString("name");
+                    int price  = resultSet.getInt("price");
+                    response.getWriter().println(name + "\t" + price + "</br>");
                 }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                response.getWriter().println("</body></html>");
+                return null;
+            });
         } else if ("min".equals(command)) {
-            try {
-                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
-                    Statement stmt = c.createStatement();
-                    ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCT ORDER BY PRICE LIMIT 1");
-                    response.getWriter().println("<html><body>");
-                    response.getWriter().println("<h1>Product with min price: </h1>");
+            db.executeQuery("SELECT * FROM PRODUCT ORDER BY PRICE LIMIT 1", resultSet -> {
+                response.getWriter().println("<html><body>");
+                response.getWriter().println("<h1>Product with min price: </h1>");
 
-                    while (rs.next()) {
-                        String  name = rs.getString("name");
-                        int price  = rs.getInt("price");
-                        response.getWriter().println(name + "\t" + price + "</br>");
-                    }
-                    response.getWriter().println("</body></html>");
-
-                    rs.close();
-                    stmt.close();
+                while (resultSet.next()) {
+                    String  name = resultSet.getString("name");
+                    int price  = resultSet.getInt("price");
+                    response.getWriter().println(name + "\t" + price + "</br>");
                 }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                response.getWriter().println("</body></html>");
+                return null;
+            });
         } else if ("sum".equals(command)) {
-            try {
-                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
-                    Statement stmt = c.createStatement();
-                    ResultSet rs = stmt.executeQuery("SELECT SUM(price) FROM PRODUCT");
-                    response.getWriter().println("<html><body>");
-                    response.getWriter().println("Summary price: ");
+            db.executeQuery("SELECT SUM(price) FROM PRODUCT", resultSet -> {
+                response.getWriter().println("<html><body>");
+                response.getWriter().println("Summary price: ");
 
-                    if (rs.next()) {
-                        response.getWriter().println(rs.getInt(1));
-                    }
-                    response.getWriter().println("</body></html>");
-
-                    rs.close();
-                    stmt.close();
+                if (resultSet.next()) {
+                    response.getWriter().println(resultSet.getInt(1));
                 }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                response.getWriter().println("</body></html>");
+                return null;
+            });
         } else if ("count".equals(command)) {
-            try {
-                try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
-                    Statement stmt = c.createStatement();
-                    ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM PRODUCT");
-                    response.getWriter().println("<html><body>");
-                    response.getWriter().println("Number of products: ");
+            db.executeQuery("SELECT COUNT(*) FROM PRODUCT", resultSet -> {
+                response.getWriter().println("<html><body>");
+                response.getWriter().println("Number of products: ");
 
-                    if (rs.next()) {
-                        response.getWriter().println(rs.getInt(1));
-                    }
-                    response.getWriter().println("</body></html>");
-
-                    rs.close();
-                    stmt.close();
+                if (resultSet.next()) {
+                    response.getWriter().println(resultSet.getInt(1));
                 }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+                response.getWriter().println("</body></html>");
+                return null;
+            });
         } else {
             response.getWriter().println("Unknown command: " + command);
         }

@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import ru.akirakozov.sd.refactoring.db.Database;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,10 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -32,8 +29,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GetProductsServletTest {
-    private static String testDbUrl;
     private static Path tempDir;
+    private static Database database;
 
     @Mock
     private HttpServletRequest request;
@@ -42,13 +39,7 @@ public class GetProductsServletTest {
     private HttpServletResponse response;
 
     private void executeUpdate(String sql) {
-        try (Connection connection = DriverManager.getConnection(testDbUrl)) {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(sql);
-            statement.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        database.executeUpdate(sql);
     }
 
     @BeforeClass
@@ -59,7 +50,7 @@ public class GetProductsServletTest {
             throw new UncheckedIOException(e);
         }
 
-        testDbUrl = "jdbc:sqlite:" + tempDir.resolve("tmp.db");
+        database = new Database("jdbc:sqlite:" + tempDir.resolve("tmp.db"));
     }
 
     @AfterClass
@@ -123,7 +114,7 @@ public class GetProductsServletTest {
         }
 
         try {
-            new GetProductsServlet(testDbUrl).doGet(request, response);
+            new GetProductsServlet(database).doGet(request, response);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

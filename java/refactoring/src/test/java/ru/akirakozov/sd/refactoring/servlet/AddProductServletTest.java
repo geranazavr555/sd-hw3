@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import ru.akirakozov.sd.refactoring.db.Database;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,8 +36,8 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AddProductServletTest {
-    private static String testDbUrl;
     private static Path tempDir;
+    private static Database database;
 
     @Mock
     private HttpServletRequest request;
@@ -45,31 +46,19 @@ public class AddProductServletTest {
     private HttpServletResponse response;
 
     private void executeUpdate(String sql) {
-        try (Connection connection = DriverManager.getConnection(testDbUrl)) {
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(sql);
-            statement.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        database.executeUpdate(sql);
     }
 
     private List<Product> executeSelectAll() {
-        try (Connection c = DriverManager.getConnection(testDbUrl)) {
-            Statement stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCT");
+        return database.executeQuery("SELECT * FROM PRODUCT", resultSet -> {
             List<Product> result = new ArrayList<>();
-            while (rs.next()) {
-                String  name = rs.getString("name");
-                int price  = rs.getInt("price");
+            while (resultSet.next()) {
+                String  name = resultSet.getString("name");
+                int price  = resultSet.getInt("price");
                 result.add(new Product(name, price));
             }
-            rs.close();
-            stmt.close();
             return result;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        });
     }
 
     @BeforeClass
@@ -80,7 +69,7 @@ public class AddProductServletTest {
             throw new UncheckedIOException(e);
         }
 
-        testDbUrl = "jdbc:sqlite:" + tempDir.resolve("tmp.db");
+        database = new Database("jdbc:sqlite:" + tempDir.resolve("tmp.db"));
     }
 
     @AfterClass
@@ -143,7 +132,7 @@ public class AddProductServletTest {
         }
 
         try {
-            new AddProductServlet(testDbUrl).doGet(request, response);
+            new AddProductServlet(database).doGet(request, response);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
