@@ -17,12 +17,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GetProductsServletTest {
-    private static Path tempDir;
     private static Database database;
 
     @Mock
@@ -40,54 +38,23 @@ public class GetProductsServletTest {
     @Mock
     private HttpServletResponse response;
 
-    private void executeUpdate(String sql) {
-        database.executeUpdate(sql);
-    }
-
     @BeforeClass
     public static void initDbTempDir() {
-        try {
-            tempDir = Files.createTempDirectory(GetProductsServletTest.class.getSimpleName());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        database = new Database("jdbc:sqlite:" + tempDir.resolve("tmp.db"));
+        database = TestDbUtil.acquireTestDb(GetProductsServletTest.class);
     }
 
     @AfterClass
     public static void removeDbTempDir() {
-        try {
-            Files.walkFileTree(tempDir, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+       TestDbUtil.releaseTestDb(GetProductsServletTest.class);
     }
 
     @Before
     public void initTestDb() {
-        executeUpdate("DROP TABLE IF EXISTS PRODUCT");
-        executeUpdate("CREATE TABLE PRODUCT" +
-                "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                " NAME           TEXT    NOT NULL, " +
-                " PRICE          INT     NOT NULL)");
+        TestDbUtil.initTestDb(database);
     }
 
     private void addProduct(Product product) {
-        executeUpdate(String.format("INSERT INTO PRODUCT(NAME, PRICE) VALUES ('%s', %d)",
-                product.getName(), product.getPrice()));
+        TestDbUtil.addProduct(database, product);
     }
 
     private List<Product> callServletWithValidationAndGetItems() {

@@ -17,11 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -34,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryServletTest {
-    private static Path tempDir;
     private static Database database;
 
     @Mock
@@ -47,57 +41,19 @@ public class QueryServletTest {
         database.executeUpdate(sql);
     }
 
-    private List<Product> executeSelectAll() {
-        return database.executeQuery("SELECT * FROM PRODUCT", resultSet -> {
-            List<Product> result = new ArrayList<>();
-            while (resultSet.next()) {
-                String  name = resultSet.getString("name");
-                int price  = resultSet.getInt("price");
-                result.add(new Product(name, price));
-            }
-            return result;
-        });
-    }
-
     @BeforeClass
     public static void initDbTempDir() {
-        try {
-            tempDir = Files.createTempDirectory(AddProductServletTest.class.getSimpleName());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        database = new Database("jdbc:sqlite:" + tempDir.resolve("tmp.db"));
+       database = TestDbUtil.acquireTestDb(QueryServletTest.class);
     }
 
     @AfterClass
     public static void removeDbTempDir() {
-        try {
-            Files.walkFileTree(tempDir, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        TestDbUtil.releaseTestDb(QueryServletTest.class);
     }
 
     @Before
     public void initTestDb() {
-        executeUpdate("DROP TABLE IF EXISTS PRODUCT");
-        executeUpdate("CREATE TABLE PRODUCT" +
-                "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                " NAME           TEXT    NOT NULL, " +
-                " PRICE          INT     NOT NULL)");
+        TestDbUtil.initTestDb(database);
     }
 
     private void addProduct(Product product) {
