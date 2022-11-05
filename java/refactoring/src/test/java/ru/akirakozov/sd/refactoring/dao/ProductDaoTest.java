@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 public class ProductDaoTest {
     private static final String INSERT_SQL_PREFIX = "INSERT INTO PRODUCT (NAME, PRICE) VALUES";
     private static final String FIND_SQL_PREFIX = "SELECT * FROM PRODUCT";
-    private static final String FIND_ALL_SQL = FIND_SQL_PREFIX;
     private static final String FIND_COUNT_SQL = "SELECT COUNT(*) FROM PRODUCT";
     private static final String FIND_SUM_PRICE_SQL = "SELECT SUM(price) FROM PRODUCT";
     private static final String ORDER_CLAUSE = "ORDER BY PRICE";

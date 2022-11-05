@@ -24,17 +24,8 @@ public class Main {
     public static void main(String[] args) throws Exception {
         properties.load(Main.class.getResourceAsStream("/db.properties"));
         String dbConnectionUrl = properties.getProperty("connection_url");
-
-        try (Connection c = DriverManager.getConnection(dbConnectionUrl)) {
-            String sql = "CREATE TABLE IF NOT EXISTS PRODUCT" +
-                    "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
-                    " NAME           TEXT    NOT NULL, " +
-                    " PRICE          INT     NOT NULL)";
-            Statement stmt = c.createStatement();
-
-            stmt.executeUpdate(sql);
-            stmt.close();
-        }
+        Database database = new Database(dbConnectionUrl);
+        ProductDao productDao = new ProductDaoImpl(database);
 
         Server server = new Server(8081);
 
@@ -42,8 +33,6 @@ public class Main {
         context.setContextPath("/");
         server.setHandler(context);
 
-        Database database = new Database(dbConnectionUrl);
-        ProductDao productDao = new ProductDaoImpl(database);
         context.addServlet(new ServletHolder(new AddProductServlet(productDao)), "/add-product");
         context.addServlet(new ServletHolder(new GetProductsServlet(productDao)),"/get-products");
         context.addServlet(new ServletHolder(new QueryServlet(productDao)),"/query");

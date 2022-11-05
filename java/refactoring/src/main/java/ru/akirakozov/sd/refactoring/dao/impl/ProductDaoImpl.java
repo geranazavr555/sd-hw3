@@ -14,40 +14,60 @@ import java.util.Optional;
 public class ProductDaoImpl implements ProductDao {
     private static final String TABLE_NAME = "PRODUCT";
 
+    private boolean tableExists = false;
     private final Database db;
 
     public ProductDaoImpl(Database db) {
         this.db = db;
     }
 
+    private void ensureTableExists() {
+        if (!tableExists) {
+            synchronized (this) {
+                String sql = "CREATE TABLE IF NOT EXISTS PRODUCT" +
+                        "(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                        " NAME           TEXT    NOT NULL, " +
+                        " PRICE          INT     NOT NULL)";
+                db.executeUpdate(sql);
+                tableExists = true;
+            }
+        }
+    }
+
     @Override
     public void insert(Product product) {
+        ensureTableExists();
         db.executeUpdate("INSERT INTO " + TABLE_NAME + " (NAME, PRICE) VALUES " +
                 "(\"" + product.getName() + "\"," + product.getPrice() + ")");
     }
 
     @Override
     public List<Product> findAll() {
+        ensureTableExists();
         return db.executeQuery(select(""), this::mapToProductList);
     }
 
     @Override
     public int findCount() {
+        ensureTableExists();
         return db.executeQuery("SELECT COUNT(*) FROM " + TABLE_NAME, this::mapToInt);
     }
 
     @Override
     public long findSumPrice() {
+        ensureTableExists();
         return db.executeQuery("SELECT SUM(price) FROM " + TABLE_NAME, this::mapToLong);
     }
 
     @Override
     public Optional<Product> findWithMaxPrice() {
+        ensureTableExists();
         return db.executeQuery(select("ORDER BY PRICE DESC LIMIT 1"), this::mapToProduct);
     }
 
     @Override
     public Optional<Product> findWithMinPrice() {
+        ensureTableExists();
         return db.executeQuery(select("ORDER BY PRICE LIMIT 1"), this::mapToProduct);
     }
 
