@@ -11,14 +11,14 @@ import java.io.IOException;
  * @author akirakozov
  */
 public class AddProductServlet extends ApplicationServlet {
-    private final ProductDao productDao;
+    private final AddProductCommand addProductCommand;
 
     public AddProductServlet(ProductDao productDao) {
-        this.productDao = productDao;
+        addProductCommand = new AddProductCommand(productDao);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        setupResponse(new AddProductCommand(productDao).executeAndGetRenderer(request).render(), response);
+        setupResponse(addProductCommand.executeAndGetRenderer(request).render(), response);
     }
 }
