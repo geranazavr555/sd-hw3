@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import ru.akirakozov.sd.refactoring.db.Database;
+import ru.akirakozov.sd.refactoring.model.Product;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,7 +85,8 @@ public class GetProductsServletTest {
     }
 
     private void addProduct(Product product) {
-        executeUpdate(String.format("INSERT INTO PRODUCT(NAME, PRICE) VALUES ('%s', %d)", product.name, product.price));
+        executeUpdate(String.format("INSERT INTO PRODUCT(NAME, PRICE) VALUES ('%s', %d)",
+                product.getName(), product.getPrice()));
     }
 
     private List<Product> callServletWithValidationAndGetItems() {
@@ -181,29 +183,5 @@ public class GetProductsServletTest {
 
         List<Product> returnedProducts = callServletWithValidationAndGetItems();
         assertEquals(products, returnedProducts);
-    }
-
-    @SuppressWarnings("NewClassNamingConvention")
-    private static class Product {
-        private final String name;
-        private final int price;
-
-        private Product(String name, int price) {
-            this.name = name;
-            this.price = price;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Product)) return false;
-            Product product = (Product) o;
-            return price == product.price && name.equals(product.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, price);
-        }
     }
 }

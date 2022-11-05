@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import ru.akirakozov.sd.refactoring.db.Database;
+import ru.akirakozov.sd.refactoring.model.Product;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -99,7 +100,7 @@ public class QueryServletTest {
     }
 
     private void addProduct(Product product) {
-        executeUpdate(String.format("INSERT INTO PRODUCT(NAME, PRICE) VALUES ('%s', %d)", product.name, product.price));
+        executeUpdate(String.format("INSERT INTO PRODUCT(NAME, PRICE) VALUES ('%s', %d)", product.getName(), product.getPrice()));
     }
 
     private String callServletWithValidationAndGetResult(String command) {
@@ -205,10 +206,10 @@ public class QueryServletTest {
         assertEquals("Summary price: " + testData.getPriceSum(), result);
 
         result = callServletWithValidationAndGetResult("min");
-        assertEquals("<h1>Product with min price: </h1>" + testData.getMinPriceProduct() + "</br>", result);
+        assertEquals("<h1>Product with min price: </h1>" + productToHtml(testData.getMinPriceProduct()) + "</br>", result);
 
         result = callServletWithValidationAndGetResult("max");
-        assertEquals("<h1>Product with max price: </h1>" + testData.getMaxPriceProduct() + "</br>", result);
+        assertEquals("<h1>Product with max price: </h1>" + productToHtml(testData.getMaxPriceProduct()) + "</br>", result);
     }
 
     @Test
@@ -222,25 +223,31 @@ public class QueryServletTest {
         assertEquals("Summary price: " + testData.getPriceSum(), result);
 
         result = callServletWithValidationAndGetResult("min");
-        assertEquals("<h1>Product with min price: </h1>" + testData.getMinPriceProduct() + "</br>", result);
+        assertEquals("<h1>Product with min price: </h1>" + productToHtml(testData.getMinPriceProduct()) + "</br>",
+                result);
 
         result = callServletWithValidationAndGetResult("max");
-        assertEquals("<h1>Product with max price: </h1>" + testData.getMaxPriceProduct() + "</br>", result);
+        assertEquals("<h1>Product with max price: </h1>" + productToHtml(testData.getMaxPriceProduct()) + "</br>",
+                result);
+    }
+
+    private String productToHtml(Product product) {
+        return product.getName() + "\t" + product.getPrice();
     }
 
     private static class TestData {
         private final List<Product> products = new ArrayList<>();
 
         private int getPriceSum() {
-            return products.stream().mapToInt(product -> product.price).sum();
+            return products.stream().mapToInt(Product::getPrice).sum();
         }
 
         private Product getMinPriceProduct() {
-            return products.stream().min(Comparator.comparing(product -> product.price)).orElse(null);
+            return products.stream().min(Comparator.comparing(Product::getPrice)).orElse(null);
         }
 
         private Product getMaxPriceProduct() {
-            return products.stream().max(Comparator.comparing(product -> product.price)).orElse(null);
+            return products.stream().max(Comparator.comparing(Product::getPrice)).orElse(null);
         }
 
         private int count() {
@@ -258,35 +265,6 @@ public class QueryServletTest {
         @Override
         public int hashCode() {
             return Objects.hash(products);
-        }
-    }
-
-    @SuppressWarnings("NewClassNamingConvention")
-    private static class Product {
-        private final String name;
-        private final int price;
-
-        private Product(String name, int price) {
-            this.name = name;
-            this.price = price;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Product)) return false;
-            Product product = (Product) o;
-            return price == product.price && name.equals(product.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, price);
-        }
-
-        @Override
-        public String toString() {
-            return name + "\t" + price;
         }
     }
 }

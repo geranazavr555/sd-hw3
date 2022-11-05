@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import ru.akirakozov.sd.refactoring.db.Database;
+import ru.akirakozov.sd.refactoring.model.Product;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,10 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -53,8 +52,8 @@ public class AddProductServletTest {
         return database.executeQuery("SELECT * FROM PRODUCT", resultSet -> {
             List<Product> result = new ArrayList<>();
             while (resultSet.next()) {
-                String  name = resultSet.getString("name");
-                int price  = resultSet.getInt("price");
+                String name = resultSet.getString("name");
+                int price = resultSet.getInt("price");
                 result.add(new Product(name, price));
             }
             return result;
@@ -103,8 +102,8 @@ public class AddProductServletTest {
     }
 
     private void callServletWithValidation(Product product) {
-        when(request.getParameter("name")).thenReturn(product.name);
-        when(request.getParameter("price")).thenReturn(String.valueOf(product.price));
+        when(request.getParameter("name")).thenReturn(product.getName());
+        when(request.getParameter("price")).thenReturn(String.valueOf(product.getPrice()));
 
         boolean[] contentTypeSet = new boolean[]{false};
         boolean[] statusSet = new boolean[]{false};
@@ -182,29 +181,5 @@ public class AddProductServletTest {
 
         List<Product> dbProducts = executeSelectAll();
         assertEquals(products, dbProducts);
-    }
-
-    @SuppressWarnings("NewClassNamingConvention")
-    private static class Product {
-        private final String name;
-        private final int price;
-
-        private Product(String name, int price) {
-            this.name = name;
-            this.price = price;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Product)) return false;
-            Product product = (Product) o;
-            return price == product.price && name.equals(product.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, price);
-        }
     }
 }
