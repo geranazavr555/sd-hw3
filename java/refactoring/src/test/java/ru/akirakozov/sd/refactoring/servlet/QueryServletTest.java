@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import ru.akirakozov.sd.refactoring.dao.impl.ProductDaoImpl;
 import ru.akirakozov.sd.refactoring.db.Database;
 import ru.akirakozov.sd.refactoring.model.Product;
 
@@ -132,7 +133,7 @@ public class QueryServletTest {
         }
 
         try {
-            new QueryServlet(database).doGet(request, response);
+            new QueryServlet(new ProductDaoImpl(database)).doGet(request, response);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -214,7 +215,7 @@ public class QueryServletTest {
 
     @Test
     public void stress() {
-        TestData testData = prepareData(1000);
+        TestData testData = prepareData(100);
 
         String result = callServletWithValidationAndGetResult("count");
         assertEquals("Number of products: " + testData.products.size(), result);
@@ -238,8 +239,8 @@ public class QueryServletTest {
     private static class TestData {
         private final List<Product> products = new ArrayList<>();
 
-        private int getPriceSum() {
-            return products.stream().mapToInt(Product::getPrice).sum();
+        private long getPriceSum() {
+            return products.stream().mapToLong(Product::getPrice).sum();
         }
 
         private Product getMinPriceProduct() {

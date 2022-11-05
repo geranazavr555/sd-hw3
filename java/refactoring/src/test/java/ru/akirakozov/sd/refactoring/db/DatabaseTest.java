@@ -1,7 +1,6 @@
-package ru.akirakozov.sd.refactoring.database;
+package ru.akirakozov.sd.refactoring.db;
 
 import org.junit.*;
-import ru.akirakozov.sd.refactoring.db.Database;
 import ru.akirakozov.sd.refactoring.servlet.AddProductServletTest;
 
 import java.io.IOException;

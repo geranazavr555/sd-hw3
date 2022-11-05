@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import ru.akirakozov.sd.refactoring.dao.impl.ProductDaoImpl;
 import ru.akirakozov.sd.refactoring.db.Database;
 import ru.akirakozov.sd.refactoring.model.Product;
 
@@ -116,7 +117,7 @@ public class GetProductsServletTest {
         }
 
         try {
-            new GetProductsServlet(database).doGet(request, response);
+            new GetProductsServlet(new ProductDaoImpl(database)).doGet(request, response);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -173,7 +174,7 @@ public class GetProductsServletTest {
     public void stress() {
         List<Product> products = new ArrayList<>();
 
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100; i++)
             products.add(new Product(
                     UUID.randomUUID().toString(),
                     ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE)

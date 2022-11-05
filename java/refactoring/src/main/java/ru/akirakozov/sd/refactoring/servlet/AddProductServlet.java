@@ -1,6 +1,8 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
+import ru.akirakozov.sd.refactoring.dao.ProductDao;
 import ru.akirakozov.sd.refactoring.db.Database;
+import ru.akirakozov.sd.refactoring.model.Product;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,17 +13,17 @@ import java.io.IOException;
  * @author akirakozov
  */
 public class AddProductServlet extends HttpServlet {
-    private final Database db;
+    private final ProductDao productDao;
 
-    public AddProductServlet(Database db) {
-        this.db = db;
+    public AddProductServlet(ProductDao productDao) {
+        this.productDao = productDao;
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String name = request.getParameter("name");
         long price = Long.parseLong(request.getParameter("price"));
-        db.executeUpdate("INSERT INTO PRODUCT (NAME, PRICE) VALUES (\"" + name + "\"," + price + ")");
+        productDao.insert(new Product(name, price));
 
         response.setContentType("text/html");
         response.setStatus(HttpServletResponse.SC_OK);
