@@ -1,7 +1,7 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
+import ru.akirakozov.sd.refactoring.command.GetProductsCommand;
 import ru.akirakozov.sd.refactoring.dao.ProductDao;
-import ru.akirakozov.sd.refactoring.view.GetProductsView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +19,6 @@ public class GetProductsServlet extends ApplicationServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        setupResponse(new GetProductsView(productDao.findAll()).render(), response);
+        setupResponse(new GetProductsCommand(productDao).executeAndGetRenderer(request).render(), response);
     }
 }

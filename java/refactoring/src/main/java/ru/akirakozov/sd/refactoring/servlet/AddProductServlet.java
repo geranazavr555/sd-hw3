@@ -1,8 +1,7 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
+import ru.akirakozov.sd.refactoring.command.AddProductCommand;
 import ru.akirakozov.sd.refactoring.dao.ProductDao;
-import ru.akirakozov.sd.refactoring.model.Product;
-import ru.akirakozov.sd.refactoring.view.AddProductView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,9 +19,6 @@ public class AddProductServlet extends ApplicationServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String name = request.getParameter("name");
-        long price = Long.parseLong(request.getParameter("price"));
-        productDao.insert(new Product(name, price));
-        setupResponse(new AddProductView().render(), response);
+        setupResponse(new AddProductCommand(productDao).executeAndGetRenderer(request).render(), response);
     }
 }

@@ -1,10 +1,10 @@
 package ru.akirakozov.sd.refactoring.servlet;
 
+import ru.akirakozov.sd.refactoring.command.CountProductsCommand;
+import ru.akirakozov.sd.refactoring.command.MaxPriceProductCommand;
+import ru.akirakozov.sd.refactoring.command.MinPriceProductCommand;
+import ru.akirakozov.sd.refactoring.command.SumPriceCommand;
 import ru.akirakozov.sd.refactoring.dao.ProductDao;
-import ru.akirakozov.sd.refactoring.view.CountQueryView;
-import ru.akirakozov.sd.refactoring.view.MaxQueryView;
-import ru.akirakozov.sd.refactoring.view.MinQueryView;
-import ru.akirakozov.sd.refactoring.view.SumQueryView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,19 +25,13 @@ public class QueryServlet extends ApplicationServlet {
         String command = request.getParameter("command");
 
         if ("max".equals(command)) {
-            setupResponse(
-                    productDao.findWithMaxPrice().map(MaxQueryView::new).orElseGet(MaxQueryView::new).render(),
-                    response
-            );
+            setupResponse(new MaxPriceProductCommand(productDao).executeAndGetRenderer(request).render(), response);
         } else if ("min".equals(command)) {
-            setupResponse(
-                    productDao.findWithMinPrice().map(MinQueryView::new).orElseGet(MinQueryView::new).render(),
-                    response
-            );
+            setupResponse(new MinPriceProductCommand(productDao).executeAndGetRenderer(request).render(), response);
         } else if ("sum".equals(command)) {
-            setupResponse(new SumQueryView(productDao.findSumPrice()).render(), response);
+            setupResponse(new SumPriceCommand(productDao).executeAndGetRenderer(request).render(), response);
         } else if ("count".equals(command)) {
-            setupResponse(new CountQueryView(productDao.findCount()).render(), response);
+            setupResponse(new CountProductsCommand(productDao).executeAndGetRenderer(request).render(), response);
         } else {
             setupResponse("Unknown command: " + command, response);
         }

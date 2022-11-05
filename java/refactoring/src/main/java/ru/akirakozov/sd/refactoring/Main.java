@@ -19,6 +19,8 @@ public class Main {
     private static final Properties properties = new Properties();
 
     public static void main(String[] args) throws Exception {
+        // TODO: Here we can add Dependency Injection mechanism
+
         properties.load(Main.class.getResourceAsStream("/db.properties"));
         String dbConnectionUrl = properties.getProperty("connection_url");
         Database database = new Database(dbConnectionUrl);
